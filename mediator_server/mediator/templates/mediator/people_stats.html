@@ -1,0 +1,84 @@
+{% extends "mediator/base.html" %}
+
+{% block subtitle %}
+<div class="page-subtitle">Поиск и просмотр статистики по каждому интегрированному человеку.</div>
+{% endblock %}
+
+{% block actions %}
+<form method="post" action="{% url 'ui_sync_all' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'people_stats' %}">
+    <button class="btn primary" type="submit">Синхронизировать</button>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="card mb">
+    <form class="filter-form" method="get">
+        <label>Поиск
+            <input type="text" name="q" value="{{ filters.q }}" placeholder="ФИО, город, спорт, организация">
+        </label>
+        <label>Источник
+            <select name="source_id">
+                <option value="">Все</option>
+                {% for source in sources %}
+                    <option value="{{ source.source_id }}" {% if filters.source_id == source.source_id %}selected{% endif %}>{{ source.name }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Открытость
+            <select name="open_to_offers">
+                <option value="" {% if not filters.open_to_offers %}selected{% endif %}>Все</option>
+                <option value="yes" {% if filters.open_to_offers == 'yes' %}selected{% endif %}>Открыт</option>
+                <option value="no" {% if filters.open_to_offers == 'no' %}selected{% endif %}>Закрыт</option>
+            </select>
+        </label>
+        <label>Показатель
+            <select name="metric_type">
+                <option value="">Все</option>
+                {% for metric in metric_types %}
+                    <option value="{{ metric }}" {% if filters.metric_type == metric %}selected{% endif %}>{{ metric }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>Активность
+            <select name="activity_type">
+                <option value="">Все</option>
+                {% for activity in activity_types %}
+                    <option value="{{ activity }}" {% if filters.activity_type == activity %}selected{% endif %}>{{ activity }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <button class="btn primary" type="submit">Найти</button>
+    </form>
+</div>
+
+<div class="card">
+    <div class="source-head mb">
+        <h2 class="section-title" style="margin:0">Найдено профилей: {{ count }}</h2>
+        <a class="btn" href="{% url 'people_stats' %}">Сбросить</a>
+    </div>
+    <div class="profile-list">
+        {% for item in profile_cards %}
+            <div class="profile-card">
+                <div class="person-head">
+                    <div class="avatar">{{ item.profile.full_name|first }}</div>
+                    <div>
+                        <div class="person-name"><a href="{% url 'person_detail' item.profile.global_id %}">{{ item.profile.full_name }}</a></div>
+                        <div class="person-meta">{{ item.profile.age|default:"—" }} лет · {{ item.profile.city|default:"город не указан" }} · {{ item.profile.sport_type|default:"спорт не указан" }}</div>
+                    </div>
+                </div>
+                <div class="inline-pills">
+                    <span class="pill blue">{{ item.sources_count }} ист.</span>
+                    <span class="pill teal">{{ item.activities_count }} активн.</span>
+                    <span class="pill amber">{{ item.metrics_count }} показ.</span>
+                    {% if item.profile.open_to_offers %}<span class="pill ok">Открыт</span>{% else %}<span class="pill">Закрыт</span>{% endif %}
+                </div>
+                <a class="btn soft" href="{% url 'person_detail' item.profile.global_id %}">Статистика</a>
+            </div>
+        {% empty %}
+            <div class="empty">Профили не найдены.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "mediator/base.html" %}
+
+{% block subtitle %}
+<div class="page-subtitle">{{ source.get_source_type_display }} · {{ source.base_url }}</div>
+{% endblock %}
+
+{% block actions %}
+<form method="post" action="{% url 'ui_sync_source' source.source_id %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'client_detail' source.source_id %}">
+    <button class="btn primary" type="submit">Обновить источник</button>
+</form>
+<a class="btn" href="{% url 'clients_stats' %}">Все клиенты</a>
+<a class="btn soft" href="/api/sources/{{ source.source_id }}/">API</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid cols-4 mb">
+    <div class="card metric-card"><div class="metric-label">Профили</div><div class="metric-value">{{ stats.profiles }}</div><div class="muted">связаны с источником</div></div>
+    <div class="card metric-card"><div class="metric-label">Открытые</div><div class="metric-value">{{ stats.open_profiles }}</div><div class="muted">готовы к предложениям</div></div>
+    <div class="card metric-card"><div class="metric-label">Активности</div><div class="metric-value">{{ stats.activities }}</div><div class="muted">получено из клиента</div></div>
+    <div class="card metric-card"><div class="metric-label">Показатели</div><div class="metric-value">{{ stats.metrics }}</div><div class="muted">биометрические записи</div></div>
+</div>
+
+<div class="grid cols-3 mb">
+    <div class="card">
+        <h2 class="section-title">Типы активностей</h2>
+        <div class="bar-list">
+            {% for row in activity_types %}
+                <div class="bar-row"><div class="bar-head"><span>{{ row.label }}</span><b>{{ row.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ row.percent_width }}%;"></div></div></div>
+            {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Типы показателей</h2>
+        <div class="bar-list">
+            {% for row in metric_types %}
+                <div class="bar-row"><div class="bar-head"><span>{{ row.label }}</span><b>{{ row.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ row.percent_width }}%;"></div></div></div>
+            {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Последние дни активности</h2>
+        <div class="bar-list">
+            {% for row in daily_activity %}
+                <div class="bar-row"><div class="bar-head"><span>{{ row.activity_date|date:"d.m.Y" }}</span><b>{{ row.count }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ row.percent_width }}%;"></div></div></div>
+            {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="grid cols-2 mb">
+    <div class="card">
+        <h2 class="section-title">Средние значения по источнику</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Показатель</th><th>Среднее</th><th>Ед.</th><th>Записей</th></tr></thead>
+                <tbody>
+                {% for item in metric_averages %}
+                    <tr><td>{{ item.metric_type }}</td><td>{{ item.avg_value|floatformat:1 }}</td><td>{{ item.unit }}</td><td>{{ item.count }}</td></tr>
+                {% empty %}<tr><td colspan="4">Нет данных.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Параметры подключения</h2>
+        <div class="table-wrap">
+            <table>
+                <tbody>
+                    <tr><th>Код</th><td>{{ source.source_id }}</td></tr>
+                    <tr><th>Тип</th><td>{{ source.source_type }}</td></tr>
+                    <tr><th>URL</th><td>{{ source.base_url }}</td></tr>
+                    <tr><th>Endpoint пользователей</th><td>{{ source.users_endpoint }}</td></tr>
+                    <tr><th>Последняя синхронизация</th><td>{% if source.last_sync_at %}{{ source.last_sync_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td></tr>
+                    <tr><th>Последняя ошибка</th><td>{{ source.last_error|default:"—" }}</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="section-title">Профили источника</h2>
+    <div class="profile-list">
+        {% for item in profile_cards %}
+            <div class="profile-card">
+                <div class="person-head">
+                    <div class="avatar">{{ item.profile.full_name|first }}</div>
+                    <div>
+                        <div class="person-name"><a href="{% url 'person_detail' item.profile.global_id %}">{{ item.profile.full_name }}</a></div>
+                        <div class="person-meta">{{ item.profile.city|default:"город не указан" }} · {{ item.profile.organization_name|default:"организация не указана" }}</div>
+                    </div>
+                </div>
+                <div class="inline-pills">
+                    <span class="pill blue">{{ item.activities_count }} активн.</span>
+                    <span class="pill teal">{{ item.metrics_count }} показ.</span>
+                    {% if item.profile.open_to_offers %}<span class="pill ok">Открыт</span>{% else %}<span class="pill">Закрыт</span>{% endif %}
+                </div>
+                <a class="btn soft" href="{% url 'person_detail' item.profile.global_id %}">Открыть</a>
+            </div>
+        {% empty %}
+            <div class="empty">После синхронизации здесь появятся профили.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "mediator/base.html" %}
+
+{% block subtitle %}
+<div class="page-subtitle">Общая картина по подключённым источникам, интегрированным профилям и данным медиатора.</div>
+{% endblock %}
+
+{% block actions %}
+<form method="post" action="{% url 'ui_sync_all' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'dashboard' %}">
+    <button class="btn primary" type="submit">Синхронизировать</button>
+</form>
+<a class="btn soft" href="{% url 'clients_stats' %}">Клиенты</a>
+<a class="btn" href="{% url 'people_stats' %}">Люди</a>
+{% endblock %}
+
+{% block content %}
+<div class="grid cols-4 mb">
+    <div class="card metric-card"><div class="metric-label">Источники</div><div class="metric-value">{{ cards.sources }}</div><div class="muted">активных: {{ cards.active_sources }}</div></div>
+    <div class="card metric-card"><div class="metric-label">Профили</div><div class="metric-value">{{ cards.profiles }}</div><div class="muted">открыты к предложениям: {{ cards.open_profiles }}</div></div>
+    <div class="card metric-card"><div class="metric-label">Активности</div><div class="metric-value">{{ cards.activities }}</div><div class="muted">посещения и тренировки</div></div>
+    <div class="card metric-card"><div class="metric-label">Показатели</div><div class="metric-value">{{ cards.metrics }}</div><div class="muted">биометрические записи</div></div>
+</div>
+
+<div class="grid cols-3 mb">
+    {% for item in source_cards %}
+    <div class="card source-card">
+        <div class="source-head">
+            <div>
+                <div class="source-title">{{ item.source.name }}</div>
+                <div class="source-meta">{{ item.source.get_source_type_display }} · {{ item.source.base_url }}</div>
+            </div>
+            {% if item.source.is_active %}<span class="status-pill ok">Активен</span>{% else %}<span class="status-pill bad">Отключён</span>{% endif %}
+        </div>
+        <div class="mini-grid">
+            <div class="mini"><b>{{ item.profiles_count }}</b><span>профили</span></div>
+            <div class="mini"><b>{{ item.activities_count }}</b><span>активности</span></div>
+            <div class="mini"><b>{{ item.metrics_count }}</b><span>метрики</span></div>
+            <div class="mini"><b>{{ item.consents_count }}</b><span>согласия</span></div>
+        </div>
+        <div class="bar-row">
+            <div class="bar-head"><span>Доля профилей</span><b>{{ item.profile_percent }}%</b></div>
+            <div class="bar-track"><div class="bar-fill" style="width: {{ item.profile_percent_width }}%;"></div></div>
+        </div>
+        <div class="actions">
+            <a class="btn soft" href="{% url 'client_detail' item.source.source_id %}">Открыть</a>
+            <form method="post" action="{% url 'ui_sync_source' item.source.source_id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'dashboard' %}">
+                <button class="btn" type="submit">Обновить</button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card empty">Источники ещё не зарегистрированы.</div>
+    {% endfor %}
+</div>
+
+<div class="grid cols-3 mb">
+    <div class="card">
+        <h2 class="section-title">Распределение по полу</h2>
+        <div class="bar-list">
+            {% for row in gender_rows %}
+                <div class="bar-row"><div class="bar-head"><span>{{ row.label }}</span><b>{{ row.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ row.percent_width }}%;"></div></div></div>
+            {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Типы активностей</h2>
+        <div class="bar-list">
+            {% for row in activity_rows %}
+                <div class="bar-row"><div class="bar-head"><span>{{ row.label }}</span><b>{{ row.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ row.percent_width }}%;"></div></div></div>
+            {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Типы показателей</h2>
+        <div class="bar-list">
+            {% for row in metric_rows %}
+                <div class="bar-row"><div class="bar-head"><span>{{ row.label }}</span><b>{{ row.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ row.percent_width }}%;"></div></div></div>
+            {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="grid cols-2 mb">
+    <div class="card">
+        <h2 class="section-title">Средние значения показателей</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Показатель</th><th>Среднее</th><th>Ед.</th><th>Записей</th></tr></thead>
+                <tbody>
+                {% for item in metric_averages %}
+                    <tr><td>{{ item.metric_type }}</td><td>{{ item.avg_value|floatformat:1 }}</td><td>{{ item.unit }}</td><td>{{ item.count }}</td></tr>
+                {% empty %}
+                    <tr><td colspan="4">Нет данных.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Последние действия</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Дата</th><th>Действие</th><th>Источник</th><th>Профиль</th></tr></thead>
+                <tbody>
+                {% for item in recent_audit %}
+                    <tr>
+                        <td>{{ item.created_at|date:"d.m.Y H:i" }}</td>
+                        <td>{{ item.action }}</td>
+                        <td>{% if item.source %}{{ item.source.name }}{% else %}—{% endif %}</td>
+                        <td>{% if item.profile %}<a href="{% url 'person_detail' item.profile.global_id %}">{{ item.profile.full_name }}</a>{% else %}—{% endif %}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">Журнал пуст.</td></tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h2 class="section-title">Недавно обновлённые профили</h2>
+    <div class="profile-list">
+        {% for profile in recent_profiles %}
+            <div class="profile-card">
+                <div class="person-head">
+                    <div class="avatar">{{ profile.full_name|first }}</div>
+                    <div>
+                        <div class="person-name"><a href="{% url 'person_detail' profile.global_id %}">{{ profile.full_name }}</a></div>
+                        <div class="person-meta">{{ profile.city|default:"Город не указан" }} · {{ profile.sport_type|default:"вид спорта не указан" }}</div>
+                    </div>
+                </div>
+                <div class="inline-pills">
+                    {% if profile.open_to_offers %}<span class="pill ok">Открыт</span>{% else %}<span class="pill">Закрыт</span>{% endif %}
+                    <span class="pill blue">{{ profile.training_level|default:"уровень не указан" }}</span>
+                </div>
+                <a class="btn soft" href="{% url 'person_detail' profile.global_id %}">Статистика</a>
+            </div>
+        {% empty %}
+            <div class="empty">Профилей пока нет. Запустите клиентов и выполните синхронизацию.</div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

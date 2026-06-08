@@ -1,0 +1,64 @@
+{% extends "mediator/base.html" %}
+
+{% block subtitle %}
+<div class="page-subtitle">Сравнение трёх клиентских источников и объёма данных, полученных от каждого из них.</div>
+{% endblock %}
+
+{% block actions %}
+<form method="post" action="{% url 'ui_sync_all' %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'clients_stats' %}">
+    <button class="btn primary" type="submit">Синхронизировать все</button>
+</form>
+{% endblock %}
+
+{% block content %}
+<div class="grid cols-3">
+    {% for row in rows %}
+    <div class="card source-card">
+        <div class="source-head">
+            <div>
+                <div class="source-title">{{ row.source.name }}</div>
+                <div class="source-meta">{{ row.source.get_source_type_display }} · {{ row.source.base_url }}</div>
+            </div>
+            {% if row.status.available %}<span class="status-pill ok">Доступен</span>{% else %}<span class="status-pill bad">Нет связи</span>{% endif %}
+        </div>
+        <div class="mini-grid">
+            <div class="mini"><b>{{ row.profiles_count }}</b><span>профили</span></div>
+            <div class="mini"><b>{{ row.open_profiles_count }}</b><span>открыты</span></div>
+            <div class="mini"><b>{{ row.activities_count }}</b><span>активности</span></div>
+            <div class="mini"><b>{{ row.metrics_count }}</b><span>метрики</span></div>
+        </div>
+        <div class="muted">Средний возраст: {% if row.avg_age %}{{ row.avg_age|floatformat:1 }}{% else %}—{% endif %}</div>
+        <div class="two-column">
+            <div>
+                <h3 class="section-title">Активности</h3>
+                <div class="bar-list">
+                    {% for item in row.activity_types %}
+                    <div class="bar-row"><div class="bar-head"><span>{{ item.label }}</span><b>{{ item.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ item.percent_width }}%;"></div></div></div>
+                    {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+                </div>
+            </div>
+            <div>
+                <h3 class="section-title">Показатели</h3>
+                <div class="bar-list">
+                    {% for item in row.metric_types %}
+                    <div class="bar-row"><div class="bar-head"><span>{{ item.label }}</span><b>{{ item.value }}</b></div><div class="bar-track"><div class="bar-fill" style="width: {{ item.percent_width }}%;"></div></div></div>
+                    {% empty %}<div class="empty">Нет данных.</div>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="actions">
+            <a class="btn soft" href="{% url 'client_detail' row.source.source_id %}">Подробнее</a>
+            <form method="post" action="{% url 'ui_sync_source' row.source.source_id %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'clients_stats' %}">
+                <button class="btn" type="submit">Обновить</button>
+            </form>
+        </div>
+    </div>
+    {% empty %}
+    <div class="card empty">Источники не найдены.</div>
+    {% endfor %}
+</div>
+{% endblock %}

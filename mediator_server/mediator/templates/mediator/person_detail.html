@@ -1,0 +1,166 @@
+{% extends "mediator/base.html" %}
+
+{% block subtitle %}
+<div class="page-subtitle">Интегрированная карточка человека из нескольких клиентских источников.</div>
+{% endblock %}
+
+{% block actions %}
+<a class="btn" href="{% url 'people_stats' %}">Все профили</a>
+<a class="btn soft" href="/api/users/{{ profile.global_id }}/">API</a>
+{% endblock %}
+
+{% block content %}
+<div class="detail-header mb">
+    <div class="card">
+        <div class="big-person">
+            <div class="avatar big-avatar">{{ profile.full_name|first }}</div>
+            <div>
+                <h2 class="section-title" style="margin-bottom:8px">{{ profile.full_name }}</h2>
+                <div class="inline-pills">
+                    {% if profile.open_to_offers %}<span class="pill ok">Открыт к предложениям</span>{% else %}<span class="pill">Закрыт к предложениям</span>{% endif %}
+                    <span class="pill blue">{{ profile.consent_status|default:"статус не указан" }}</span>
+                    <span class="pill teal">{{ profile.training_level|default:"уровень не указан" }}</span>
+                </div>
+                <div class="person-meta mt">
+                    {{ profile.age|default:"—" }} лет · {{ profile.gender|default:"пол не указан" }} · {{ profile.city|default:"город не указан" }} · {{ profile.sport_type|default:"вид спорта не указан" }}
+                </div>
+                <div class="person-meta">{{ profile.organization_name|default:"организация не указана" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid cols-2">
+        <div class="card metric-card"><div class="metric-label">Источники</div><div class="metric-value">{{ stats.sources }}</div><div class="muted">локальные записи</div></div>
+        <div class="card metric-card"><div class="metric-label">Активности</div><div class="metric-value">{{ stats.activities }}</div><div class="muted">записей</div></div>
+        <div class="card metric-card"><div class="metric-label">Показатели</div><div class="metric-value">{{ stats.metrics }}</div><div class="muted">измерений</div></div>
+        <div class="card metric-card"><div class="metric-label">Предложения</div><div class="metric-value">{{ stats.offers }}</div><div class="muted">от тренеров</div></div>
+    </div>
+</div>
+
+<div class="grid cols-3 mb">
+    <div class="card">
+        <h2 class="section-title">Последние показатели</h2>
+        <div class="bar-list">
+            {% for metric in latest_metrics %}
+                <div class="bar-row">
+                    <div class="bar-head"><span>{{ metric.metric_type }}</span><b>{{ metric.metric_value|floatformat:1 }} {{ metric.unit }}</b></div>
+                    <div class="muted">{{ metric.source.name }} · {% if metric.measured_at %}{{ metric.measured_at|date:"d.m.Y H:i" }}{% else %}дата не указана{% endif %}</div>
+                </div>
+            {% empty %}<div class="empty">Показателей нет.</div>{% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Согласия</h2>
+        <div class="bar-list">
+            {% for consent in consents %}
+                <div class="bar-row">
+                    <div class="bar-head"><span>{{ consent.source.name }}</span>{% if consent.open_to_offers %}<b class="pill ok">Открыт</b>{% else %}<b class="pill">Закрыт</b>{% endif %}</div>
+                    <div class="muted">{{ consent.status|default:"статус не указан" }} · до {% if consent.expires_at %}{{ consent.expires_at|date:"d.m.Y" }}{% else %}—{% endif %}</div>
+                </div>
+            {% empty %}<div class="empty">Согласий нет.</div>{% endfor %}
+        </div>
+    </div>
+    <div class="card">
+        <h2 class="section-title">Источники профиля</h2>
+        <div class="bar-list">
+            {% for link in source_links %}
+                <div class="bar-row">
+                    <div class="bar-head"><span>{{ link.source.name }}</span><b>{{ link.local_user_id }}</b></div>
+                    <div class="muted">{{ link.source.get_source_type_display }}</div>
+                </div>
+            {% empty %}<div class="empty">Связей нет.</div>{% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="grid cols-2 mb">
+    <div class="card">
+        <h2 class="section-title">Активности по источникам</h2>
+        {% for source_name, activities in activities_by_source.items %}
+            <h3 class="section-title" style="font-size:16px">{{ source_name }}</h3>
+            <div class="table-wrap mb">
+                <table>
+                    <thead><tr><th>Дата</th><th>Тип</th><th>Длительность</th><th>Интенсивность</th><th>Ккал</th></tr></thead>
+                    <tbody>
+                    {% for activity in activities %}
+                        <tr>
+                            <td>{% if activity.activity_date %}{{ activity.activity_date|date:"d.m.Y" }}{% else %}—{% endif %}</td>
+                            <td>{{ activity.activity_type|default:"—" }}</td>
+                            <td>{% if activity.duration_minutes %}{{ activity.duration_minutes }} мин.{% else %}—{% endif %}</td>
+                            <td>{{ activity.intensity|default:"—" }}</td>
+                            <td>{{ activity.calories|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% empty %}
+            <div class="empty">Активностей нет.</div>
+        {% endfor %}
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Показатели здоровья</h2>
+        {% for metric_type, metrics in metrics_by_type.items %}
+            <h3 class="section-title" style="font-size:16px">{{ metric_type }}</h3>
+            <div class="table-wrap mb">
+                <table>
+                    <thead><tr><th>Дата</th><th>Значение</th><th>Ед.</th><th>Источник</th></tr></thead>
+                    <tbody>
+                    {% for metric in metrics %}
+                        <tr>
+                            <td>{% if metric.measured_at %}{{ metric.measured_at|date:"d.m.Y H:i" }}{% else %}—{% endif %}</td>
+                            <td>{{ metric.metric_value|floatformat:1 }}</td>
+                            <td>{{ metric.unit|default:"—" }}</td>
+                            <td>{{ metric.source.name }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% empty %}
+            <div class="empty">Показателей нет.</div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="grid cols-2">
+    <div class="card">
+        <h2 class="section-title">Предложения</h2>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Дата</th><th>Тренер</th><th>Организация</th><th>Статус</th></tr></thead>
+                <tbody>
+                {% for offer in offers %}
+                    <tr>
+                        <td>{{ offer.created_at|date:"d.m.Y H:i" }}</td>
+                        <td>{{ offer.trainer_name }}</td>
+                        <td>{{ offer.organization_name|default:"—" }}</td>
+                        <td>{{ offer.get_status_display }}</td>
+                    </tr>
+                {% empty %}<tr><td colspan="4">Предложений нет.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2 class="section-title">Видимость данных</h2>
+        <div class="inline-pills mb">
+            {% for category in profile.visible_data_categories %}
+                <span class="pill blue">{{ category }}</span>
+            {% empty %}
+                <span class="pill">категории не указаны</span>
+            {% endfor %}
+        </div>
+        <h2 class="section-title">Разрешённые организации</h2>
+        <div class="inline-pills">
+            {% for org_type in profile.allowed_organization_types %}
+                <span class="pill teal">{{ org_type }}</span>
+            {% empty %}
+                <span class="pill">типы не указаны</span>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
