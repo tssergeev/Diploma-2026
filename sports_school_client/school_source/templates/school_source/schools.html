@@ -1,0 +1,38 @@
+{% extends "school_source/base.html" %}
+{% block title %}Школы{% endblock %}
+{% block content %}
+<h1>Спортивные школы</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить школу</h2>
+        {% include "school_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th>Город</th>
+                    <th>Адрес</th>
+                </tr>
+                {% for school in schools %}
+                    <tr>
+                        <td>{{ school.id }}</td>
+                        <td>{{ school.name }}</td>
+                        <td>{{ school.organization_type }}</td>
+                        <td>{{ school.city|default:"—" }}</td>
+                        <td>{{ school.address|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

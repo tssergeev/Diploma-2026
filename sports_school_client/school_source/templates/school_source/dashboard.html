@@ -1,0 +1,77 @@
+{% extends "school_source/base.html" %}
+{% block title %}Панель — клиент спортивной школы{% endblock %}
+{% block content %}
+<h1>Панель источника данных</h1>
+
+<div class="grid">
+    <div class="card stat-card"><div class="stat-label">Школы</div><div class="stat">{{ schools_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Секции</div><div class="stat">{{ sections_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Ученики</div><div class="stat">{{ students_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Посещаемость</div><div class="stat">{{ attendance_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Тесты</div><div class="stat">{{ fitness_tests_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Разрешения</div><div class="stat">{{ permissions_count }}</div></div>
+</div>
+
+<div class="grid">
+    <section class="card">
+        <h2>Последние ученики</h2>
+        {% if recent_students %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>ФИО</th><th>Код</th><th>Секция</th></tr>
+                    {% for student in recent_students %}
+                        <tr>
+                            <td>{{ student.full_name }}</td>
+                            <td><code>{{ student.local_code }}</code></td>
+                            <td>{{ student.section.name }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Ученики пока не добавлены.</div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Последние занятия</h2>
+        {% if recent_attendance %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Дата</th><th>Ученик</th><th>Тип</th></tr>
+                    {% for record in recent_attendance %}
+                        <tr>
+                            <td>{{ record.training_date }}</td>
+                            <td>{{ record.student.full_name }}</td>
+                            <td>{{ record.training_type }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Занятия пока не добавлены.</div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Последние тесты</h2>
+        {% if recent_tests %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Дата</th><th>Ученик</th><th>Пульс</th><th>Вес</th></tr>
+                    {% for test in recent_tests %}
+                        <tr>
+                            <td>{{ test.tested_at }}</td>
+                            <td>{{ test.student.full_name }}</td>
+                            <td>{{ test.resting_pulse|default:"—" }}</td>
+                            <td>{{ test.weight_kg|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Тесты пока не добавлены.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

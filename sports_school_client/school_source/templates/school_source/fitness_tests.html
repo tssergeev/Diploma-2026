@@ -1,0 +1,44 @@
+{% extends "school_source/base.html" %}
+{% block title %}Контрольные тесты{% endblock %}
+{% block content %}
+<h1>Контрольные тесты</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить тест</h2>
+        {% include "school_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>Код теста</th>
+                    <th>Ученик</th>
+                    <th>Дата</th>
+                    <th>Пульс</th>
+                    <th>Рост</th>
+                    <th>Вес</th>
+                    <th>Выносливость</th>
+                    <th>Гибкость</th>
+                </tr>
+                {% for test in fitness_tests %}
+                    <tr>
+                        <td><code>{{ test.test_code }}</code></td>
+                        <td>{{ test.student.full_name }}</td>
+                        <td>{{ test.tested_at }}</td>
+                        <td>{{ test.resting_pulse|default:"—" }}</td>
+                        <td>{{ test.height_cm|default:"—" }}</td>
+                        <td>{{ test.weight_kg|default:"—" }}</td>
+                        <td>{{ test.endurance_score|default:"—" }}</td>
+                        <td>{{ test.flexibility_score|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="8">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
