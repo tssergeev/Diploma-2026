@@ -1,0 +1,33 @@
+{% extends "mobile_source/base.html" %}
+{% block title %}Документы — клиент фитнес-приложения{% endblock %}
+{% block content %}
+<h1>JSON-документы</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Новый документ</h2>
+        {% include "mobile_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Текущие документы</h2>
+        {% if documents %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>ID</th><th>ФИО</th><th>Источник</th><th>Обновлено</th></tr>
+                    {% for document in documents %}
+                        <tr>
+                            <td><code>{{ document.local_id }}</code></td>
+                            <td>{{ document.document.profile.fullName|default:"—" }}</td>
+                            <td>{{ document.document.organization.name|default:"—" }}</td>
+                            <td>{{ document.updated_at|date:"d.m.Y H:i" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Документы пока не добавлены.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

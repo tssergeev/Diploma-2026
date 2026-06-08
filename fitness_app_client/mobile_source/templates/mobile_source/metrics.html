@@ -1,0 +1,34 @@
+{% extends "mobile_source/base.html" %}
+{% block title %}Показатели — клиент фитнес-приложения{% endblock %}
+{% block content %}
+<h1>Показатели здоровья</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Новый показатель</h2>
+        {% include "mobile_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Текущие показатели</h2>
+        {% if metrics_rows %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Пользователь</th><th>ID</th><th>Тип</th><th>Значение</th><th>Дата</th></tr>
+                    {% for metric in metrics_rows %}
+                        <tr>
+                            <td>{{ metric.full_name }}</td>
+                            <td><code>{{ metric.metric_id }}</code></td>
+                            <td>{{ metric.metric_type }}</td>
+                            <td>{{ metric.metric_value }} {{ metric.unit }}</td>
+                            <td>{{ metric.measured_at|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Показатели пока не добавлены.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

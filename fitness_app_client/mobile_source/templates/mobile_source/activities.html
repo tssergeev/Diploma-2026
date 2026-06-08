@@ -1,0 +1,36 @@
+{% extends "mobile_source/base.html" %}
+{% block title %}Активности — клиент фитнес-приложения{% endblock %}
+{% block content %}
+<h1>Активности</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Новая активность</h2>
+        {% include "mobile_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Журнал активностей</h2>
+        {% if activities_rows %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Дата</th><th>Пользователь</th><th>ID</th><th>Тип</th><th>Мин.</th><th>Интенсивность</th><th>Ккал</th></tr>
+                    {% for activity in activities_rows %}
+                        <tr>
+                            <td>{{ activity.activity_date|default:"—" }}</td>
+                            <td>{{ activity.full_name }}</td>
+                            <td><code>{{ activity.activity_id|default:"—" }}</code></td>
+                            <td>{{ activity.activity_type|default:"—" }}</td>
+                            <td>{{ activity.duration_minutes|default:"—" }}</td>
+                            <td>{{ activity.intensity|default:"—" }}</td>
+                            <td>{{ activity.calories|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Активности пока не добавлены.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

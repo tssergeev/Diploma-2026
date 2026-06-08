@@ -1,0 +1,35 @@
+{% extends "mobile_source/base.html" %}
+{% block title %}Согласия — клиент фитнес-приложения{% endblock %}
+{% block content %}
+<h1>Согласия</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Обновить согласие</h2>
+        {% include "mobile_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Текущие согласия</h2>
+        {% if consent_rows %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Пользователь</th><th>ID</th><th>Открыт</th><th>Статус</th><th>Категории</th><th>Срок</th></tr>
+                    {% for consent in consent_rows %}
+                        <tr>
+                            <td>{{ consent.full_name }}</td>
+                            <td><code>{{ consent.local_user_id }}</code></td>
+                            <td>{% if consent.open_to_offers %}<span class="badge">Да</span>{% else %}<span class="badge badge-muted">Нет</span>{% endif %}</td>
+                            <td>{{ consent.status|default:"—" }}</td>
+                            <td>{{ consent.visible_data_categories|join:", " }}</td>
+                            <td>{{ consent.expires_at|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Согласия пока не добавлены.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

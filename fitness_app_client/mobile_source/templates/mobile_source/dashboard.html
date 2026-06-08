@@ -1,0 +1,76 @@
+{% extends "mobile_source/base.html" %}
+{% block title %}Панель — клиент фитнес-приложения{% endblock %}
+{% block content %}
+<h1>Панель источника данных</h1>
+
+<div class="grid">
+    <div class="card stat-card"><div class="stat-label">Документы</div><div class="stat">{{ documents_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Активности</div><div class="stat">{{ activities_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Показатели</div><div class="stat">{{ metrics_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Активные согласия</div><div class="stat">{{ active_consents_count }}</div></div>
+</div>
+
+<div class="grid">
+    <section class="card">
+        <h2>Последние документы</h2>
+        {% if recent_documents %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>ID</th><th>Обновлено</th><th>ФИО</th></tr>
+                    {% for document in recent_documents %}
+                        <tr>
+                            <td><code>{{ document.local_id }}</code></td>
+                            <td>{{ document.updated_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ document.document.profile.fullName|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Документы пока не добавлены.</div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Последние активности</h2>
+        {% if recent_activities %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Дата</th><th>Пользователь</th><th>Тип</th><th>Мин.</th></tr>
+                    {% for activity in recent_activities %}
+                        <tr>
+                            <td>{{ activity.activity_date|default:"—" }}</td>
+                            <td>{{ activity.full_name }}</td>
+                            <td>{{ activity.activity_type }}</td>
+                            <td>{{ activity.duration_minutes|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Активности пока не добавлены.</div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Последние показатели</h2>
+        {% if recent_metrics %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Пользователь</th><th>Тип</th><th>Значение</th><th>Дата</th></tr>
+                    {% for metric in recent_metrics %}
+                        <tr>
+                            <td>{{ metric.full_name }}</td>
+                            <td>{{ metric.metric_type }}</td>
+                            <td>{{ metric.metric_value }} {{ metric.unit }}</td>
+                            <td>{{ metric.measured_at|default:"—" }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Показатели пока не добавлены.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

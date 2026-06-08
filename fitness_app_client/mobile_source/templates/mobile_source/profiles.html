@@ -1,0 +1,30 @@
+{% extends "mobile_source/base.html" %}
+{% block title %}Профили — клиент фитнес-приложения{% endblock %}
+{% block content %}
+<h1>Профили пользователей</h1>
+
+<section class="card">
+    <h2>Список профилей</h2>
+    {% if profiles %}
+        <div class="table-wrap">
+            <table>
+                <tr><th>ID</th><th>ФИО</th><th>Пол</th><th>Возраст</th><th>Город</th><th>Активность</th><th>Уровень</th><th>Источник</th></tr>
+                {% for profile in profiles %}
+                    <tr>
+                        <td><code>{{ profile.local_user_id }}</code></td>
+                        <td>{{ profile.full_name|default:"—" }}</td>
+                        <td>{{ profile.gender|default:"—" }}</td>
+                        <td>{{ profile.age|default:"—" }}</td>
+                        <td>{{ profile.city|default:"—" }}</td>
+                        <td>{{ profile.sport_type|default:"—" }}</td>
+                        <td>{{ profile.training_level|default:"—" }}</td>
+                        <td>{{ profile.organization.organization_name|default:"—" }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    {% else %}
+        <div class="muted">Профили пока не добавлены.</div>
+    {% endif %}
+</section>
+{% endblock %}
