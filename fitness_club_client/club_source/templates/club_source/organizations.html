@@ -1,0 +1,36 @@
+{% extends "club_source/base.html" %}
+{% block title %}Организации{% endblock %}
+{% block content %}
+<h1>Организации</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить организацию</h2>
+        {% include "club_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Тип</th>
+                    <th>Город</th>
+                </tr>
+                {% for organization in organizations %}
+                    <tr>
+                        <td>{{ organization.id }}</td>
+                        <td>{{ organization.name }}</td>
+                        <td>{{ organization.organization_type }}</td>
+                        <td>{{ organization.city|default:"—" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="4">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

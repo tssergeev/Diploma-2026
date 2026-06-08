@@ -1,0 +1,38 @@
+{% extends "club_source/base.html" %}
+{% block title %}Показатели здоровья{% endblock %}
+{% block content %}
+<h1>Показатели здоровья</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить показатель</h2>
+        {% include "club_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>ID показателя</th>
+                    <th>Пользователь</th>
+                    <th>Тип</th>
+                    <th>Значение</th>
+                    <th>Время измерения</th>
+                </tr>
+                {% for metric in metrics %}
+                    <tr>
+                        <td><code>{{ metric.metric_id }}</code></td>
+                        <td>{{ metric.member.full_name }}</td>
+                        <td>{{ metric.metric_type }}</td>
+                        <td>{{ metric.metric_value }} {{ metric.unit }}</td>
+                        <td>{{ metric.measured_at|date:"d.m.Y H:i" }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="5">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

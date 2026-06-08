@@ -1,0 +1,57 @@
+{% extends "club_source/base.html" %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<h1>Пользователи фитнес-клуба</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить пользователя</h2>
+        {% include "club_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>Локальный ID</th>
+                    <th>ФИО</th>
+                    <th>Дата рождения</th>
+                    <th>Пол</th>
+                    <th>Город</th>
+                    <th>Активность</th>
+                    <th>Уровень</th>
+                    <th>Организация</th>
+                    <th>Согласие</th>
+                </tr>
+                {% for member in members %}
+                    <tr>
+                        <td><code>{{ member.local_id }}</code></td>
+                        <td>{{ member.full_name }}<br><span class="muted">{{ member.email|default:"email не указан" }}</span></td>
+                        <td>{{ member.birth_date }}</td>
+                        <td>{{ member.get_gender_display }}</td>
+                        <td>{{ member.city|default:"—" }}</td>
+                        <td>{{ member.sport_type|default:"—" }}</td>
+                        <td>{{ member.training_level|default:"—" }}</td>
+                        <td>{{ member.organization.name }}</td>
+                        <td>
+                            {% if member.consent %}
+                                {% if member.consent.open_to_offers %}
+                                    <span class="badge">открыт</span>
+                                {% else %}
+                                    <span class="badge badge-muted">закрыт</span>
+                                {% endif %}
+                                <br><span class="muted">{{ member.consent.get_status_display }}</span>
+                            {% else %}
+                                <span class="muted">нет</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="9">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

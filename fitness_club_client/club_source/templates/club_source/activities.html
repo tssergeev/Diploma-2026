@@ -1,0 +1,42 @@
+{% extends "club_source/base.html" %}
+{% block title %}Активности{% endblock %}
+{% block content %}
+<h1>Активности и посещения</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить активность</h2>
+        {% include "club_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>ID активности</th>
+                    <th>Пользователь</th>
+                    <th>Дата</th>
+                    <th>Тип</th>
+                    <th>Длительность</th>
+                    <th>Интенсивность</th>
+                    <th>Калории</th>
+                </tr>
+                {% for activity in activities %}
+                    <tr>
+                        <td><code>{{ activity.activity_id }}</code></td>
+                        <td>{{ activity.member.full_name }}</td>
+                        <td>{{ activity.activity_date }}</td>
+                        <td>{{ activity.activity_type }}</td>
+                        <td>{{ activity.duration_minutes }} мин</td>
+                        <td>{{ activity.get_intensity_display }}</td>
+                        <td>{{ activity.calories }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="7">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "club_source/base.html" %}
+{% block title %}Панель — клиент фитнес-клуба{% endblock %}
+{% block content %}
+<h1>Панель источника данных</h1>
+
+<div class="grid">
+    <div class="card stat-card"><div class="stat-label">Организации</div><div class="stat">{{ organizations_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Пользователи</div><div class="stat">{{ members_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Активности</div><div class="stat">{{ activities_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Показатели</div><div class="stat">{{ metrics_count }}</div></div>
+    <div class="card stat-card"><div class="stat-label">Согласия</div><div class="stat">{{ consents_count }}</div></div>
+</div>
+
+<div class="grid">
+    <section class="card">
+        <h2>Последние пользователи</h2>
+        {% if recent_members %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>ФИО</th><th>Локальный ID</th><th>Организация</th></tr>
+                    {% for member in recent_members %}
+                        <tr>
+                            <td>{{ member.full_name }}</td>
+                            <td><code>{{ member.local_id }}</code></td>
+                            <td>{{ member.organization.name }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Пользователей пока нет.</div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Последние активности</h2>
+        {% if recent_activities %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Дата</th><th>Пользователь</th><th>Тип</th></tr>
+                    {% for activity in recent_activities %}
+                        <tr>
+                            <td>{{ activity.activity_date }}</td>
+                            <td>{{ activity.member.full_name }}</td>
+                            <td>{{ activity.activity_type }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Активностей пока нет.</div>
+        {% endif %}
+    </section>
+
+    <section class="card">
+        <h2>Последние показатели</h2>
+        {% if recent_metrics %}
+            <div class="table-wrap">
+                <table>
+                    <tr><th>Время</th><th>Пользователь</th><th>Показатель</th><th>Значение</th></tr>
+                    {% for metric in recent_metrics %}
+                        <tr>
+                            <td>{{ metric.measured_at|date:"d.m.Y H:i" }}</td>
+                            <td>{{ metric.member.full_name }}</td>
+                            <td>{{ metric.metric_type }}</td>
+                            <td>{{ metric.metric_value }} {{ metric.unit }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="muted">Показателей пока нет.</div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

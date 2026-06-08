@@ -1,0 +1,46 @@
+{% extends "club_source/base.html" %}
+{% block title %}Согласия{% endblock %}
+{% block content %}
+<h1>Согласия и открытость к предложениям</h1>
+
+<div class="layout">
+    <section class="card">
+        <h2>Добавить согласие</h2>
+        {% include "club_source/_form.html" %}
+    </section>
+
+    <section class="card">
+        <h2>Имеющиеся записи</h2>
+        <div class="table-wrap">
+            <table>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Открыт к предложениям</th>
+                    <th>Категории данных</th>
+                    <th>Типы организаций</th>
+                    <th>Срок</th>
+                    <th>Статус</th>
+                </tr>
+                {% for consent in consents %}
+                    <tr>
+                        <td>{{ consent.member.full_name }}</td>
+                        <td>
+                            {% if consent.open_to_offers %}
+                                <span class="badge">да</span>
+                            {% else %}
+                                <span class="badge badge-muted">нет</span>
+                            {% endif %}
+                        </td>
+                        <td><code>{{ consent.visible_data_categories }}</code></td>
+                        <td><code>{{ consent.allowed_organization_types }}</code></td>
+                        <td>{{ consent.granted_at }} — {{ consent.expires_at }}</td>
+                        <td>{{ consent.get_status_display }}</td>
+                    </tr>
+                {% empty %}
+                    <tr><td colspan="6">Записей пока нет.</td></tr>
+                {% endfor %}
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}
